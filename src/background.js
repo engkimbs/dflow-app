@@ -137,7 +137,7 @@ autoUpdater.on('update-downloaded', (info) => {
     message: "업데이트가 있습니다. 프로그램을 업데이트 하시겠습니까?"
   };
 
-  let btnIndex = dialog.showMessageBox(browserWindow, option)
+  let btnIndex = dialog.showMessageBox(win, option)
 
   if(btnIndex === 0)
     autoUpdater.quitAndInstall();
