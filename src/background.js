@@ -8,6 +8,9 @@ import { autoUpdater} from "electron-updater"
 const path = require('path')
 const isDevelopment = process.env.NODE_ENV !== 'production'
 
+autoUpdater.logger = require('electron-log');
+autoUpdater.logger.transports.file.level = 'info'
+
 let win;
 
 // Scheme must be registered before the app is ready
