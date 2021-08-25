@@ -24,11 +24,9 @@ async function createWindow() {
     width: 800,
     height: 600,
     webPreferences: {
-      // Use pluginOptions.nodeIntegration, leave this alone
-      // See nklayman.github.io/vue-cli-plugin-electron-builder/guide/security.html#node-integration for more info
       nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
       contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-      preload: path.join(__dirname, "preload.js") // use a preload script
+      preload: path.join(__dirname, "preload.js")
     }
   })
 
@@ -127,15 +125,6 @@ autoUpdater.on('download-progress', (progressObj) => {
 
 autoUpdater.on('update-downloaded', (info) => {
   sendStatusToWindow('Update downloaded');
-  console.log(info)
-
-  // const option = {
-  //   type: "question",
-  //   buttons: ["업데이트", "취소"],
-  //   defaultId: 0,
-  //   title: "electron-updater",
-  //   message: "업데이트가 있습니다. 프로그램을 업데이트 하시겠습니까?"
-  // };
 
   autoUpdater.quitAndInstall();
 });

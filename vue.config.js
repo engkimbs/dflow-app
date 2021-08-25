@@ -4,13 +4,15 @@ module.exports = {
     pluginOptions: {
         electronBuilder: {
             builderOptions: {
+                appId: "com.lucorda.dflow.app",
+                artifactName: "dflow-app-${version}.${ext}",
                 publish: [
                     {
                         provider: 'github',
                         owner: 'engkimbs',
                         private: true,
                     }
-                ]
+                ],
             },
             preload: "src/preload.js"
         }
