@@ -41,6 +41,7 @@ async function createWindow() {
   }
 
   sendStatusToWindow("wow")
+  autoUpdater.checkForUpdatesAndNotify();
 }
 
 function sendStatusToWindow(text) {
