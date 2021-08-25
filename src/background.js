@@ -129,16 +129,13 @@ autoUpdater.on('update-downloaded', (info) => {
   sendStatusToWindow('Update downloaded');
   console.log(info)
 
-  const option = {
-    type: "question",
-    buttons: ["업데이트", "취소"],
-    defaultId: 0,
-    title: "electron-updater",
-    message: "업데이트가 있습니다. 프로그램을 업데이트 하시겠습니까?"
-  };
+  // const option = {
+  //   type: "question",
+  //   buttons: ["업데이트", "취소"],
+  //   defaultId: 0,
+  //   title: "electron-updater",
+  //   message: "업데이트가 있습니다. 프로그램을 업데이트 하시겠습니까?"
+  // };
 
-  let btnIndex = dialog.showMessageBox(win, option)
-
-  if(btnIndex === 0)
-    autoUpdater.quitAndInstall();
+  autoUpdater.quitAndInstall();
 });
