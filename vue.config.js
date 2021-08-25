@@ -16,5 +16,9 @@ module.exports = {
             },
             preload: "src/preload.js"
         }
-    }
+    },
+
+    transpileDependencies: [
+      'vuetify'
+    ]
 };
