@@ -14,6 +14,10 @@
           <option name="url" value="https://github.com/engkimbs/generative-art-node.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/engkimbs/metaplex.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
     <option name="cloneParentDir" value="C:\Users\engki\WebstormProjects" />
