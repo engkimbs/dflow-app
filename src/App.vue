@@ -59,6 +59,12 @@
                 </v-col>
                 <v-col cols="3"></v-col>
                 <v-col cols="6" style="padding: 35px 15px 0px 0px" align="right">
+                  <v-progress-circular
+                      v-show="isProcessing"
+                      indeterminate
+                      color="white"
+                      style="padding-right: 60px"
+                  ></v-progress-circular>
                   <v-btn
                       color="primary"
                       style="margin-right: 5px"
@@ -101,9 +107,9 @@ export default {
     },
     filterPhoneNumber() {
       this.company_list = []
-      if(this.isMobileOnly) {
+      if (this.isMobileOnly) {
         this.total_company_list.map(company => {
-          if(company.isMobile) {
+          if (company.isMobile) {
             this.company_list.push(company)
           }
         })
@@ -119,16 +125,17 @@ export default {
       this.company_list = []
       let count = 0
       let rank = 0
-      for(let keyword of this.keywordList) {
+      this.isProcessing = true
+      for (let keyword of this.keywordList) {
         rank = 0
-        for(let page=1; page<=6; ++page) {
-          await this.sleep(parseInt(this.delay)*1000);
+        for (let page = 1; page <= 6; ++page) {
+          await this.sleep(parseInt(this.delay) * 1000);
           await this.$getNAVERMapItemList(
               "https://map.naver.com/v5/api/search?",
               keyword, page)
               .then(response => {
                 console.log(response.result)
-                if(response.result == null)
+                if (response.result == null)
                   return;
                 response.result.place.list.map(data => {
                   rank += 1
@@ -149,6 +156,7 @@ export default {
               })
         }
       }
+      this.isProcessing = false
       this.company_list = this.total_company_list
     },
     refreshKeywordList() {
@@ -167,15 +175,16 @@ export default {
     delay: 0,
     delayRules: [v => v >= 0],
     isMobileOnly: false,
+    isProcessing: false,
     extractInfo: "0개의 데이터가 추출되었습니다.",
     headers: [
       {text: '업체명', align: 'start', sortable: false, value: 'name', width: '16%'},
       {text: '주소', value: 'address', width: '32%'},
       {text: '전화번호', value: 'phone', width: '12%'},
       {text: '업종', value: 'category', width: '12%'},
-      {text: '키워드', value: 'keyword', width:'10%'},
-      {text: '순위', value: 'rank', width:'8%'},
-      {text: '웹사이트', value: 'website', width:'12%'},
+      {text: '키워드', value: 'keyword', width: '10%'},
+      {text: '순위', value: 'rank', width: '8%'},
+      {text: '웹사이트', value: 'website', width: '12%'},
     ],
     company_list: [],
     total_company_list: []
