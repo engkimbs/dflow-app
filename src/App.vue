@@ -1,7 +1,6 @@
 <template>
   <v-app>
     <v-app-bar app>
-
     </v-app-bar>
     <v-main>
       <v-container fluid>
@@ -14,7 +13,7 @@
                                 :min=0 :max=6 :rules="delayRules" color="white"/>
                 </v-col>
                 <v-col cols="6" style="padding-bottom: 0">
-                  <v-checkbox label="휴대폰번호만 추출" id="mobile-checkbox" v-model="isMobileOnly"/>
+                  <v-checkbox label="휴대폰번호만 추출" id="mobile-checkbox" @click="filterPhoneNumber" v-model="isMobileOnly"/>
                 </v-col>
               </v-row>
               <v-row style="padding: 12px;">
@@ -98,28 +97,32 @@ export default {
   },
   methods: {
     sleep(ms) {
-      return new Promise((resolve) => {
-        console.log(`sleep for ${ms}ms`);
-        return setTimeout(() => {
-          return resolve(console.log("woke up!"))
-        }, ms)
-      })
+      return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    filterPhoneNumber() {
+      this.company_list = []
+      if(this.isMobileOnly) {
+        this.total_company_list.map(company => {
+          if(company.isMobile) {
+            this.company_list.push(company)
+          }
+        })
+      } else {
+        this.company_list = this.total_company_list
+      }
+      this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
     },
     removeFromList(i) {
-      console.log(i)
       this.keywordList.splice(i, 1)
-      console.log(i)
     },
     async geItemList() {
       this.company_list = []
-      console.log(this.keywordList)
       let count = 0
       let rank = 0
       for(let keyword of this.keywordList) {
         rank = 0
         for(let page=1; page<=6; ++page) {
-          console.log(`${page} 페이지`)
-          console.log(`${count} 카운팅`)
+          await this.sleep(parseInt(this.delay)*1000);
           await this.$getNAVERMapItemList(
               "https://map.naver.com/v5/api/search?",
               keyword, page)
@@ -136,15 +139,17 @@ export default {
                     category: data['category'],
                     keyword: keyword,
                     rank: rank,
-                    website: data['homePage']
+                    website: data['homePage'],
+                    isMobile: data['tel'].startsWith('010')
                   }
-                  this.company_list.push(item);
+                  this.total_company_list.push(item);
                   count += 1
                   this.extractInfo = `${count} 개의 데이터가 추출되었습니다.`
                 })
               })
         }
       }
+      this.company_list = this.total_company_list
     },
     refreshKeywordList() {
       this.keywordList = []
@@ -172,7 +177,8 @@ export default {
       {text: '순위', value: 'rank', width:'8%'},
       {text: '웹사이트', value: 'website', width:'12%'},
     ],
-    company_list: []
+    company_list: [],
+    total_company_list: []
   }),
 } </script>
 <style lang="scss">
