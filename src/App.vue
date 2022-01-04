@@ -1,7 +1,6 @@
 <template>
   <v-app>
-    <v-app-bar app>
-    </v-app-bar>
+    <v-app-bar app></v-app-bar>
     <v-main>
       <v-container fluid>
         <v-row>
@@ -9,23 +8,21 @@
             <v-content style="padding: 0">
               <v-row style="padding: 12px 12px 0 12px">
                 <v-col cols="6" style="padding-bottom: 0">
-                  <v-text-field label="요청지연" id="delay-input" v-model="delay" hide-details outlined type="number"
-                                :min=0 :max=6 :rules="delayRules" color="white"/>
+                  <v-text-field label="요청지연" id="delay-input" v-model="delay" hide-details outlined type="number" :min=0
+                                :max=6 :rules="delayRules" color="white" :disabled="disableInputAndButton"/>
                 </v-col>
                 <v-col cols="6" style="padding-bottom: 0">
-                  <v-checkbox label="휴대폰번호만 추출" id="mobile-checkbox" @click="filterPhoneNumber" v-model="isMobileOnly"/>
+                  <v-checkbox label="휴대폰번호만 추출" id="mobile-checkbox" @click="filterPhoneNumber" v-model="isMobileOnly"
+                              :disabled="disableInputAndButton"/>
                 </v-col>
               </v-row>
               <v-row style="padding: 12px;">
                 <v-list rounded style="height: 700px; width: 600px" class="overflow-y-auto">
                   <v-subheader>
-                    <v-text-field id="keyword-input" v-model="keyword" @keyup.enter="appendKeyword"
-                                  label="키워드를 입력하세요"></v-text-field>
-                    <v-icon id="refresh-icon"
-                            color="green"
-                            @click="refreshKeywordList"
-                    >
-                      mdi-refresh
+                    <v-text-field id="keyword-input" v-model="keyword" @keyup.enter="appendKeyword" label="키워드를 입력하세요"
+                                  :disabled="disableInputAndButton"></v-text-field>
+                    <v-icon id="refresh-icon" color="green" @click="refreshKeywordList"
+                            :disabled="disableInputAndButton"> mdi-refresh
                     </v-icon>
                   </v-subheader>
                   <v-list-item-group color="primary">
@@ -48,42 +45,27 @@
             <v-content id="table-content" style="padding: 0">
               <v-row>
                 <v-col cols="3" style="padding: 20px 0px 0px 15px;">
-                  <v-text-field
-                      id="extract_info"
-                      readonly
-                      single-line
-                      :placeholder="extractInfo"
-                      color="white"
-                      prepend-icon="mdi-database-arrow-down"
-                  ></v-text-field>
+                  <v-text-field id="extract_info" readonly single-line :placeholder="extractInfo" color="white"
+                                prepend-icon="mdi-database-arrow-down"></v-text-field>
                 </v-col>
                 <v-col cols="3"></v-col>
                 <v-col cols="6" style="padding: 35px 15px 0px 0px" align="right">
-                  <v-progress-circular
-                      v-show="isProcessing"
-                      indeterminate
-                      color="white"
-                      style="padding-right: 60px"
-                  ></v-progress-circular>
-                  <v-btn
-                      color="primary"
-                      style="margin-right: 5px"
-                      @click="geItemList"
-                  >
-                    추출하기
-                  </v-btn>
-                  <v-btn color="green" style="margin-right: 5px; color:white">
-                    엑셀저장
+                  <v-progress-circular v-show="isProcessing" indeterminate color="white"
+                                       style="padding-right: 60px"></v-progress-circular>
+                  <v-btn id="extractButton" @click="getItemList" :disabled="disableInputAndButton"> 추출하기</v-btn>
+                  <v-btn id="excelDownloadButton" color="green" @click="excelDownload"
+                         :disabled="disableInputAndButton"> 엑셀저장
                   </v-btn>
                 </v-col>
               </v-row>
               <v-row>
                 <v-col cols="12">
-                  <v-data-table :headers="headers" :items="company_list" :items-per-page="10000"
-                                fixed-header
-                                hide-default-footer
-                                height="900px"
-                  ></v-data-table>
+                  <v-data-table :headers="headers" :items="company_list" :items-per-page="10000" fixed-header
+                                hide-default-footer height="900px">
+                    <template #item.website="{value}">
+                      <div class="text-truncate" style="max-width: 300px"> {{ value }}</div>
+                    </template>
+                  </v-data-table>
                 </v-col>
               </v-row>
             </v-content>
@@ -91,7 +73,7 @@
         </v-row>
       </v-container>
     </v-main>
-    <v-footer app> <!-- --> </v-footer>
+    <v-footer app></v-footer>
   </v-app>
 </template>
 <script>
@@ -100,10 +82,18 @@ export default {
   created() {
     this.company_list = []
     this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
+    window.IPC.receive('get-file-path', (evt) => {
+      this.exportToExcel(evt)
+    })
   },
   methods: {
     sleep(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
+    },
+    exportToExcel(path) {
+      console.log(this.headers)
+      console.log(this.company_list)
+      window.IPC.send('write-excel-files', path, this.headers, this.company_list)
     },
     filterPhoneNumber() {
       this.company_list = []
@@ -121,43 +111,55 @@ export default {
     removeFromList(i) {
       this.keywordList.splice(i, 1)
     },
-    async geItemList() {
+    switchDisableStateInputAndButtonComponent() {
+      this.disableInputAndButton = !this.disableInputAndButton;
+    },
+    async getItemList() {
       this.company_list = []
+      this.total_company_list = []
       let count = 0
       let rank = 0
       this.isProcessing = true
+      this.switchDisableStateInputAndButtonComponent()
       for (let keyword of this.keywordList) {
         rank = 0
         for (let page = 1; page <= 6; ++page) {
           await this.sleep(parseInt(this.delay) * 1000);
-          await this.$getNAVERMapItemList(
-              "https://map.naver.com/v5/api/search?",
-              keyword, page)
+          await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page)
               .then(response => {
-                console.log(response.result)
-                if (response.result == null)
-                  return;
-                response.result.place.list.map(data => {
-                  rank += 1
-                  let item = {
-                    name: data['name'],
-                    address: data['address'],
-                    phone: data['tel'],
-                    category: data['category'],
-                    keyword: keyword,
-                    rank: rank,
-                    website: data['homePage'],
-                    isMobile: data['tel'].startsWith('010')
-                  }
-                  this.total_company_list.push(item);
+            if (response.result == null) return;
+            response.result.place.list.map(data => {
+              rank += 1
+              let item = {
+                name: data['name'],
+                address: data['address'],
+                phone: data['tel'],
+                category: data['category'],
+                keyword: keyword,
+                rank: rank,
+                website: data['homePage'],
+                isMobile: data['tel'].startsWith('010')
+              }
+              this.total_company_list.push(item);
+              if (this.isMobileOnly) {
+                if (item.isMobile) {
+                  this.company_list.push(item)
                   count += 1
-                  this.extractInfo = `${count} 개의 데이터가 추출되었습니다.`
-                })
-              })
+                }
+              } else {
+                this.company_list.push(item)
+                count += 1
+              }
+              this.extractInfo = `${count} 개의 데이터가 추출되었습니다.`
+            })
+          })
         }
       }
       this.isProcessing = false
-      this.company_list = this.total_company_list
+      this.switchDisableStateInputAndButtonComponent()
+    },
+    excelDownload() {
+      window.IPC.send('select-dirs')
     },
     refreshKeywordList() {
       this.keywordList = []
@@ -172,6 +174,7 @@ export default {
     panel: 0,
     keywordList: [],
     keyword: "",
+    disableInputAndButton: false,
     delay: 0,
     delayRules: [v => v >= 0],
     isMobileOnly: false,
@@ -184,12 +187,13 @@ export default {
       {text: '업종', value: 'category', width: '12%'},
       {text: '키워드', value: 'keyword', width: '10%'},
       {text: '순위', value: 'rank', width: '8%'},
-      {text: '웹사이트', value: 'website', width: '12%'},
+      {text: '웹사이트', value: 'website', width: '300px', fixed: true},
     ],
     company_list: [],
     total_company_list: []
   }),
-} </script>
+}
+</script>
 <style lang="scss">
 #app {
   background-color: #1f1e2e;
@@ -216,17 +220,33 @@ export default {
   font-size: 10px;
 }
 
+#extractButton {
+  background-color: dodgerblue;
+  color: white;
+  margin-right: 5px;
+}
+
+#extractButton[disabled] {
+  background-color: #85BDFFFF !important;
+  color: white !important;
+}
+
+#excelDownloadButton {
+  background-color: #4CAF50 !important;
+  color: white !important;
+}
+
+#excelDownloadButton[disabled] {
+  background-color: #85B189FF !important;
+  color: white !important;
+}
+
 .theme--light.v-label {
   color: white !important;
 }
 
 #app > div > main > div > div > div > div.flex > div > div > div > div > label {
   color: white;
-}
-
-#table-content {
-  //background-color: #272a3d;
-  //padding: 10px;
 }
 
 #extract_info::placeholder {
