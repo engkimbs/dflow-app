@@ -58,10 +58,10 @@
                   </v-btn>
                 </v-col>
               </v-row>
-              <v-row>
+              <v-row class="fill-height">
                 <v-col cols="12">
                   <v-data-table :headers="headers" :items="company_list" :items-per-page="10000" fixed-header
-                                hide-default-footer height="900px">
+                                hide-default-footer height="780px">
                     <template #item.website="{value}">
                       <div class="text-truncate" style="max-width: 300px"> {{ value }}</div>
                     </template>
@@ -206,6 +206,10 @@ export default {
 
 #app > div > main > div > div > div > div.col.col-2 > main > div > div:nth-child(1) > div:nth-child(2) > div > div > div.v-input__slot > label {
   font-size: 10px
+}
+
+.v-data-table {
+  height: 795px !important;
 }
 
 .v-btn-toggle--group > .v-btn.v-btn {
