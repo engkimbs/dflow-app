@@ -1,8 +1,16 @@
 <template>
   <v-app>
-    <v-app-bar app></v-app-bar>
+    <v-app-bar app st>
+      <v-app-bar-nav-icon></v-app-bar-nav-icon>
+      <v-spacer></v-spacer>
+      <v-btn id="notification" style="margin-right:5px; padding-right: 30px">
+        <v-icon size="30px" style="color:white !important; padding-right: 10px;">mdi-bell-outline</v-icon>
+        <div style="color:white !important;"> 공지</div>
+      </v-btn>
+      <Login/>
+    </v-app-bar>
     <v-main>
-      <v-container fluid>
+      <v-container fluid >
         <v-row>
           <v-col cols="2">
             <v-content style="padding: 0">
@@ -17,7 +25,7 @@
                 </v-col>
               </v-row>
               <v-row style="padding: 12px;">
-                <v-list rounded style="height: 700px; width: 600px" class="overflow-y-auto">
+                <v-list rounded style="height: 795px; width: 600px" class="overflow-y-auto">
                   <v-subheader>
                     <v-text-field id="keyword-input" v-model="keyword" @keyup.enter="appendKeyword" label="키워드를 입력하세요"
                                   :disabled="disableInputAndButton"></v-text-field>
@@ -52,9 +60,10 @@
                 <v-col cols="6" style="padding: 35px 15px 0px 0px" align="right">
                   <v-progress-circular v-show="isProcessing" indeterminate color="white"
                                        style="padding-right: 60px"></v-progress-circular>
-                  <v-btn id="extractButton" @click="getItemList" :disabled="disableInputAndButton"> 추출하기</v-btn>
-                  <v-btn id="excelDownloadButton" color="green" @click="excelDownload"
-                         :disabled="disableInputAndButton"> 엑셀저장
+                  <v-btn id="extractButton" @click="getItemList" :disabled="disableInputAndButton" width="115px"> 추출하기
+                  </v-btn>
+                  <v-btn id="excelDownloadButton" color="green" @click="excelDownload" :disabled="disableInputAndButton"
+                         width="115px"> 엑셀저장
                   </v-btn>
                 </v-col>
               </v-row>
@@ -76,9 +85,10 @@
     <v-footer app></v-footer>
   </v-app>
 </template>
-<script>
+<script> import Login from './components/Login'
+
 export default {
-  components: {},
+  components: {Login},
   created() {
     this.company_list = []
     this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
@@ -89,13 +99,11 @@ export default {
   methods: {
     sleep(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
-    },
-    exportToExcel(path) {
+    }, exportToExcel(path) {
       console.log(this.headers)
       console.log(this.company_list)
       window.IPC.send('write-excel-files', path, this.headers, this.company_list)
-    },
-    filterPhoneNumber() {
+    }, filterPhoneNumber() {
       this.company_list = []
       if (this.isMobileOnly) {
         this.total_company_list.map(company => {
@@ -107,14 +115,11 @@ export default {
         this.company_list = this.total_company_list
       }
       this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
-    },
-    removeFromList(i) {
+    }, removeFromList(i) {
       this.keywordList.splice(i, 1)
-    },
-    switchDisableStateInputAndButtonComponent() {
+    }, switchDisableStateInputAndButtonComponent() {
       this.disableInputAndButton = !this.disableInputAndButton;
-    },
-    async getItemList() {
+    }, async getItemList() {
       this.company_list = []
       this.total_company_list = []
       let count = 0
@@ -125,8 +130,7 @@ export default {
         rank = 0
         for (let page = 1; page <= 6; ++page) {
           await this.sleep(parseInt(this.delay) * 1000);
-          await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page)
-              .then(response => {
+          await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page).then(response => {
             if (response.result == null) return;
             response.result.place.list.map(data => {
               rank += 1
@@ -157,17 +161,16 @@ export default {
       }
       this.isProcessing = false
       this.switchDisableStateInputAndButtonComponent()
-    },
-    excelDownload() {
+    }, excelDownload() {
       window.IPC.send('select-dirs')
-    },
-    refreshKeywordList() {
+    }, refreshKeywordList() {
       this.keywordList = []
-    },
-    appendKeyword() {
+    }, appendKeyword() {
       this.keywordList.push(this.keyword)
       this.keyword = ""
-    },
+    }, closeDialog() {
+      this.loginDialog = false
+    }
   },
   data: () => ({
     page: 6,
@@ -180,20 +183,19 @@ export default {
     isMobileOnly: false,
     isProcessing: false,
     extractInfo: "0개의 데이터가 추출되었습니다.",
-    headers: [
-      {text: '업체명', align: 'start', sortable: false, value: 'name', width: '16%'},
-      {text: '주소', value: 'address', width: '32%'},
-      {text: '전화번호', value: 'phone', width: '12%'},
-      {text: '업종', value: 'category', width: '12%'},
-      {text: '키워드', value: 'keyword', width: '10%'},
-      {text: '순위', value: 'rank', width: '8%'},
-      {text: '웹사이트', value: 'website', width: '300px', fixed: true},
-    ],
+    headers: [{text: '업체명', align: 'start', sortable: false, value: 'name', width: '16%'}, {
+      text: '주소',
+      value: 'address',
+      width: '32%'
+    }, {text: '전화번호', value: 'phone', width: '12%'}, {text: '업종', value: 'category', width: '12%'}, {
+      text: '키워드',
+      value: 'keyword',
+      width: '10%'
+    }, {text: '순위', value: 'rank', width: '8%'}, {text: '웹사이트', value: 'website', width: '300px', fixed: true},],
     company_list: [],
     total_company_list: []
   }),
-}
-</script>
+} </script>
 <style lang="scss">
 #app {
   background-color: #1f1e2e;
@@ -205,7 +207,7 @@ export default {
 }
 
 #app > div > main > div > div > div > div.col.col-2 > main > div > div:nth-child(1) > div:nth-child(2) > div > div > div.v-input__slot > label {
-  font-size: 10px
+  font-size: 9.5px
 }
 
 .v-data-table {
@@ -220,8 +222,20 @@ export default {
   color: rebeccapurple !important;
 }
 
-#app > div > main > div > div > div > div.col.col-3 > div:nth-child(1) > div:nth-child(2) > div > div > div.v-input__slot > label {
-  font-size: 10px;
+#notification {
+  background-color: #272a3d !important;
+}
+
+#notification:hover {
+  background-color: #8195c7 !important;
+}
+
+#loginButton {
+  background-color: #272a3d !important;
+}
+
+#loginButton:hover {
+  background-color: #8195c7 !important;
 }
 
 #extractButton {
@@ -261,10 +275,6 @@ export default {
   color: white;
   background-color: #272a3d;
   border: 10px rebeccapurple;
-
-  label {
-    color: white;
-  }
 }
 
 #mobile-checkbox {
@@ -328,7 +338,7 @@ export default {
   }
 }
 
-.theme--light.v-icon {
+.v-icon {
   color: gray !important;
 }
 
