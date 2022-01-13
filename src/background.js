@@ -4,29 +4,42 @@ import ExcelJS from 'exceljs'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import {autoUpdater} from "electron-updater"
+import axios from "axios";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 let win
-
+let loginWindow
 async function createWindow() {
-    win = new BrowserWindow({
-        width: 2000,
-        height: 1000,
+    loginWindow = new BrowserWindow({
+        width: 300,
+        height: 260,
         webPreferences: {
             nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
             contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
             preload: path.join(__dirname, "preload.js")
-        }
+        },
+        frame:false,
+        resizable: false
     })
+    // win = new BrowserWindow({
+    //     width: 2000,
+    //     height: 1000,
+    //     webPreferences: {
+    //         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+    //         contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+    //         preload: path.join(__dirname, "preload.js")
+    //     }
+    // })
     if (process.env.WEBPACK_DEV_SERVER_URL) {
-        await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-        if (!process.env.IS_TEST) win.webContents.openDevTools()
+        await loginWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+        // if (!process.env.IS_TEST)
+        //     loginWindow.webContents.openDevTools()
     } else {
         createProtocol('app')
-        win.loadURL('app://./index.html')
+        loginWindow.loadURL('app://./index.html')
     }
     autoUpdater.checkForUpdatesAndNotify();
 }
@@ -35,6 +48,36 @@ ipcMain.on('select-dirs', async (event, arg) => {
     const result = await dialog.showOpenDialog(win, {properties: ['openDirectory']})
     console.log('select-dirs!!')
     event.reply('get-file-path', result.filePaths)
+})
+
+ipcMain.on('login', async (event, account, password="") => {
+    // if(process.env.NODE_ENV === "development") {
+    //     let loginURL = 'http://localhost:80'
+    //     await axios.get()
+    // } else {
+    //
+    // }
+    // firebase.auth().createUserWithEmailAndPassword(account, password)
+    //     .then(
+    //         function (user) {
+    //             alert('회원가입 완료!')
+    //             console.log(user)
+    //         },
+    //         function (err) {
+    //             alert('에러 : ' + err.message)
+    //         }
+    //     )
+    const options = {
+        type: 'warning',
+        title: 'dflow',
+        message: '로그인 시도',
+        detail: '계정 정보가 맞지 않습니다. 다시 시도해주세요'
+    }
+    event.reply('login-reply', true)
+})
+
+ipcMain.on('login-window-close', async (event) => {
+    loginWindow.close()
 })
 
 ipcMain.on('write-excel-files', async (event, path, headers, company_list) => {

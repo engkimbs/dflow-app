@@ -1,17 +1,9 @@
 <template>
-  <v-dialog v-model="loginDialog" persistent
-            width="300px" height="800px">
-    <template v-slot:activator="{on, attrs}">
-      <v-btn id="loginButton" style="padding-right: 10px" v-bind="attrs" v-on="on">
-        <v-icon size="30px" style="color:white !important; padding-right: 10px;">mdi-login</v-icon>
-        <div style="color:white !important; font-weight: bold"> 로그인</div>
-      </v-btn>
-    </template>
-    <v-card class="elevation-12">
+    <v-card class="elevation-12" height="280px">
       <v-toolbar id="loginToolBar" style="background-color:green !important; justify-content: center">
-        <v-toolbar-title style="font-weight: bold">로그인</v-toolbar-title>
+        <v-toolbar-title style="font-weight: bold; color: white !important;">NDB</v-toolbar-title>
         <v-spacer/>
-        <v-icon color="white" size="20px" @click="loginDialog=false">mdi-close</v-icon>
+        <v-icon size="20px" style="color: white !important;" @click="close">mdi-close</v-icon>
       </v-toolbar>
       <v-text-field solo
                     id="account"
@@ -23,7 +15,6 @@
                     v-model="account"
                     style="color:black !important; padding: 20px 15px 0px 15px">
       </v-text-field>
-      <v-card-text v-show="loginFail" class="text-center" style="padding: 8px; color: red !important; justify-content: center">등록되지 않은 사용자입니다.</v-card-text>
 <!--      <v-text-field solo-->
 <!--                    id="password"-->
 <!--                    label="비밀번호"-->
@@ -39,21 +30,34 @@
       <v-card-actions style="justify-content: center">
         <v-btn id="login" color="blue darken-1" text @click="login">로그인 </v-btn>
       </v-card-actions>
+      <v-card-text v-if="loginFail" style="padding: 0px 10px 2px 60px; color: red !important; ">
+        등록되지 않은 사용자입니다.
+      </v-card-text>
+      <v-card-text v-else style="padding: 1px 10px 2px 60px; color: white !important; ">
+        non
+      </v-card-text>
     </v-card>
-  </v-dialog>
 </template>
 <script>
 export default {
   name: 'Login',
+  created() {
+    window.IPC.receive('login-reply', (evt) => {
+      console.log(evt)
+      this.loginFail = evt
+    })
+  },
   methods: {
     async login() {
       await window.IPC.send('login', this.account, this.password)
+    },
+    async close() {
+      await window.IPC.send('login-window-close')
     }
   },
   data: () => ({
     username: '',
-    loginFail: true,
-    loginDialog: false,
+    loginFail: false,
     account: '',
     password: '',
   }),
@@ -61,11 +65,27 @@ export default {
 </script>
 <style lang="scss">
 
+::-webkit-scrollbar {
+  display: none;
+}
+
 #loginToolBar {
   .v-toolbar__content{
     background-color: #7952a1;
     justify-content: center;
   }
+}
+
+.v-input__control {
+  margin-left: 10px;
+}
+
+.v-text-field__details {
+  min-height: 0px;
+}
+
+.v-text-field.v-text-field--enclosed .v-text-field__details {
+  margin-bottom: 0px !important;
 }
 
 label[for=account] {

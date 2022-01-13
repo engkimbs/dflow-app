@@ -2,9 +2,10 @@
 node_modules
 /dist
 
+config/firebase-config.json
 
 # local env files
-.env.local
+.env.none
 .env.*.local
 
 # Log files

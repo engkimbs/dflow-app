@@ -85,7 +85,8 @@
     <v-footer app></v-footer>
   </v-app>
 </template>
-<script> import Login from './components/Login'
+<script>
+import Login from './components/Login'
 
 export default {
   components: {Login},
@@ -99,11 +100,13 @@ export default {
   methods: {
     sleep(ms) {
       return new Promise((resolve) => setTimeout(resolve, ms));
-    }, exportToExcel(path) {
+    },
+    exportToExcel(path) {
       console.log(this.headers)
       console.log(this.company_list)
       window.IPC.send('write-excel-files', path, this.headers, this.company_list)
-    }, filterPhoneNumber() {
+    },
+    filterPhoneNumber() {
       this.company_list = []
       if (this.isMobileOnly) {
         this.total_company_list.map(company => {
@@ -115,11 +118,14 @@ export default {
         this.company_list = this.total_company_list
       }
       this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
-    }, removeFromList(i) {
+    },
+    removeFromList(i) {
       this.keywordList.splice(i, 1)
-    }, switchDisableStateInputAndButtonComponent() {
+    },
+    switchDisableStateInputAndButtonComponent() {
       this.disableInputAndButton = !this.disableInputAndButton;
-    }, async getItemList() {
+    },
+    async getItemList() {
       this.company_list = []
       this.total_company_list = []
       let count = 0
@@ -130,7 +136,8 @@ export default {
         rank = 0
         for (let page = 1; page <= 6; ++page) {
           await this.sleep(parseInt(this.delay) * 1000);
-          await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page).then(response => {
+          await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page)
+              .then(response => {
             if (response.result == null) return;
             response.result.place.list.map(data => {
               rank += 1
@@ -161,14 +168,18 @@ export default {
       }
       this.isProcessing = false
       this.switchDisableStateInputAndButtonComponent()
-    }, excelDownload() {
+    },
+    excelDownload() {
       window.IPC.send('select-dirs')
-    }, refreshKeywordList() {
+    },
+    refreshKeywordList() {
       this.keywordList = []
-    }, appendKeyword() {
+    },
+    appendKeyword() {
       this.keywordList.push(this.keyword)
       this.keyword = ""
-    }, closeDialog() {
+    },
+    closeDialog() {
       this.loginDialog = false
     }
   },
