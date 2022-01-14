@@ -30,10 +30,11 @@
     <v-card-actions style="justify-content: center">
       <v-btn id="login" color="blue darken-1" text @click="login">로그인</v-btn>
     </v-card-actions>
-    <v-card-actions v-if="loginFail" style=" justify-content: center; transition: opacity ease 2s 1s; opacity: 0; ">
+    <v-card-actions v-if="isLoggedIn" style="padding: 1px 10px 2px 60px; color: white !important; "></v-card-actions>
+    <v-card-actions v-else style=" justify-content: center; transition: opacity ease 2s 1s; opacity: 0; ">
       <v-btn style="background-color: black; color: white">등록되지 않은 사용자입니다.</v-btn>
     </v-card-actions>
-    <v-card-actions v-else style="padding: 1px 10px 2px 60px; color: white !important; "></v-card-actions>
+
   </v-card>
 </template>
 <script>
@@ -42,11 +43,12 @@ export default {
   created() {
     window.IPC.receive('login-reply', (evt) => {
       console.log(evt)
-      this.loginFail = evt
+      this.isLoggedIn = evt
     })
   },
   methods: {
     async login() {
+      this.isLoggedIn = true
       await window.IPC.send('login', this.account, this.password)
     },
     async close() {
@@ -55,7 +57,7 @@ export default {
   },
   data: () => ({
     username: '',
-    loginFail: false,
+    isLoggedIn: true,
     account: '',
     password: '',
   }),

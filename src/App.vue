@@ -208,6 +208,19 @@ export default {
   }),
 } </script>
 <style lang="scss">
+
+body {
+  -webkit-app-region: drag;
+}
+
+input {
+  -webkit-app-region: no-drag;
+}
+
+button {
+  -webkit-app-region: no-drag;
+}
+
 #app {
   background-color: #1f1e2e;
 }

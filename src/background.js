@@ -10,9 +10,11 @@ const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
-let win
+
+let mainWindow
 let loginWindow
-async function createWindow() {
+
+async function createLoginWindow(devPath, prodPath) {
     loginWindow = new BrowserWindow({
         width: 300,
         height: 260,
@@ -22,24 +24,39 @@ async function createWindow() {
             preload: path.join(__dirname, "preload.js")
         },
         frame:false,
-        resizable: false
+        //resizable: false
     })
-    // win = new BrowserWindow({
-    //     width: 2000,
-    //     height: 1000,
-    //     webPreferences: {
-    //         nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
-    //         contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
-    //         preload: path.join(__dirname, "preload.js")
-    //     }
-    // })
+
+
     if (process.env.WEBPACK_DEV_SERVER_URL) {
-        await loginWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
-        // if (!process.env.IS_TEST)
-        //     loginWindow.webContents.openDevTools()
+        await loginWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath)
+        if (!process.env.IS_TEST)
+            loginWindow.webContents.openDevTools()
     } else {
         createProtocol('app')
         loginWindow.loadURL('app://./index.html')
+    }
+    autoUpdater.checkForUpdatesAndNotify();
+}
+
+async function createMainWindow(devPath, prodPath) {
+    mainWindow = new BrowserWindow({
+        width: 2000,
+        height: 1000,
+        webPreferences: {
+            nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
+            contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
+            preload: path.join(__dirname, "preload.js")
+        },
+    })
+
+    if (process.env.WEBPACK_DEV_SERVER_URL) {
+        await mainWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath)
+        if (!process.env.IS_TEST)
+            mainWindow.webContents.openDevTools()
+    } else {
+        createProtocol('app')
+        mainWindow.loadURL('app://./index.html')
     }
     autoUpdater.checkForUpdatesAndNotify();
 }
@@ -67,17 +84,20 @@ ipcMain.on('login', async (event, account, password="") => {
     //             alert('에러 : ' + err.message)
     //         }
     //     )
-    const options = {
-        type: 'warning',
-        title: 'dflow',
-        message: '로그인 시도',
-        detail: '계정 정보가 맞지 않습니다. 다시 시도해주세요'
+    if(account === "eng.kimbs@gmail.com") {
+        console.log(typeof(loginWindow))
+        loginWindow.close()
+        await createMainWindow('', 'index.html')
+        mainWindow.show()
+        event.reply('login-reply', true)
     }
-    event.reply('login-reply', true)
+    else {
+        event.reply('login-reply', false)
+    }
 })
 
 ipcMain.on('login-window-close', async (event) => {
-    loginWindow.close()
+    app.quit()
 })
 
 ipcMain.on('write-excel-files', async (event, path, headers, company_list) => {
@@ -171,8 +191,9 @@ app.on('window-all-closed', () => {
     }
 })
 app.on('activate', () => {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    if (BrowserWindow.getAllWindows().length === 0) createLoginWindow()
 })
+
 app.on('ready', async () => {
     if (isDevelopment && !process.env.IS_TEST) {
         try {
@@ -181,7 +202,7 @@ app.on('ready', async () => {
             console.error('Vue Devtools failed to install:', e.toString())
         }
     }
-    createWindow()
+    await createLoginWindow('login', 'login.html')
 })
 
 if (isDevelopment) {

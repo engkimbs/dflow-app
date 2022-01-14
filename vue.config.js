@@ -18,6 +18,11 @@ module.exports = {
     }
   },
 
+  pages: {
+    index: 'src/main.js',
+    login: 'src/login/main.js'
+  },
+
   transpileDependencies: [
     'vuetify'
   ]
