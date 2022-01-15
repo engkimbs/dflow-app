@@ -44,6 +44,9 @@ export default {
     window.IPC.receive('login-reply', (evt) => {
       console.log(evt)
       this.isLoggedIn = evt
+      if(evt) {
+        this.close()
+      }
     })
   },
   methods: {

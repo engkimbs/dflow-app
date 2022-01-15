@@ -4,7 +4,6 @@ import ExcelJS from 'exceljs'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import {autoUpdater} from "electron-updater"
-import axios from "axios";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
@@ -36,7 +35,6 @@ async function createLoginWindow(devPath, prodPath) {
         createProtocol('app')
         loginWindow.loadURL('app://./index.html')
     }
-    autoUpdater.checkForUpdatesAndNotify();
 }
 
 async function createMainWindow(devPath, prodPath) {
@@ -58,7 +56,6 @@ async function createMainWindow(devPath, prodPath) {
         createProtocol('app')
         mainWindow.loadURL('app://./index.html')
     }
-    autoUpdater.checkForUpdatesAndNotify();
 }
 
 ipcMain.on('select-dirs', async (event, arg) => {
@@ -85,8 +82,6 @@ ipcMain.on('login', async (event, account, password="") => {
     //         }
     //     )
     if(account === "eng.kimbs@gmail.com") {
-        console.log(typeof(loginWindow))
-        loginWindow.close()
         await createMainWindow('', 'index.html')
         mainWindow.show()
         event.reply('login-reply', true)
@@ -97,7 +92,7 @@ ipcMain.on('login', async (event, account, password="") => {
 })
 
 ipcMain.on('login-window-close', async (event) => {
-    app.quit()
+    loginWindow.destroy()
 })
 
 ipcMain.on('write-excel-files', async (event, path, headers, company_list) => {
@@ -203,6 +198,7 @@ app.on('ready', async () => {
         }
     }
     await createLoginWindow('login', 'login.html')
+    autoUpdater.checkForUpdatesAndNotify();
 })
 
 if (isDevelopment) {
