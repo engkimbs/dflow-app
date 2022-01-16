@@ -34,6 +34,10 @@
           <option name="url" value="https://github.com/SimulatedGREG/electron-vue.git" />
           <option name="userName" value="" />
         </UrlAndUserName>
+        <UrlAndUserName>
+          <option name="url" value="https://github.com/vue-electron/vuex-electron-example.git" />
+          <option name="userName" value="" />
+        </UrlAndUserName>
       </list>
     </option>
     <option name="cloneParentDir" value="C:\Users\engki\WebstormProjects" />
