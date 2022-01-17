@@ -6,6 +6,7 @@ module.exports = {
       builderOptions: {
         appId: "com.lucorda.dflow.app",
         artifactName: "dflow-app-${version}.${ext}",
+        asar: true,
         publish: [
           {
             provider: 'github',
@@ -13,6 +14,20 @@ module.exports = {
             private: true,
           }
         ],
+        win: {
+          target: [
+            {
+              target: "nsis",
+              arch: ["x64", "ia32"]
+            }
+          ],
+          icon: 'public/logo.png'
+        },
+        nsis: {
+          "oneClick": false,
+          "allowToChangeInstallationDirectory": true,
+          "createDesktopShortcut": true
+        }
       },
       preload: "src/preload.js"
     }

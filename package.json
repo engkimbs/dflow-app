@@ -1,6 +1,6 @@
 {
   "name": "dflow-app",
-  "version": "0.1.11",
+  "version": "1.0.0",
   "private": true,
   "scripts": {
     "serve": "vue-cli-service serve",
@@ -9,6 +9,7 @@
     "electron:build": "vue-cli-service electron:build",
     "electron:serve": "vue-cli-service electron:serve",
     "electron:serve:development": "vue-cli-service electron:serve --mode development",
+    "electron:serve:window_main": "vue-cli-service electron:serve",
     "postinstall": "electron-builder install-app-deps",
     "postuninstall": "electron-builder install-app-deps",
     "publish": "vue-cli-service electron:build -p always",
@@ -23,7 +24,9 @@
     "electron-updater": "^4.3.9",
     "exceljs": "^4.3.0",
     "vue": "^2.6.11",
-    "vuetify": "^2.4.0"
+    "vuetify": "^2.4.0",
+    "vuex": "^3.6.2",
+    "vuex-electron": "^1.0.3"
   },
   "devDependencies": {
     "@vue/cli-plugin-babel": "~4.5.0",

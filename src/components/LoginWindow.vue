@@ -1,10 +1,12 @@
 <template>
-  <v-card class="elevation-12" height="280px">
+  <v-card class="elevation-12" height="500px">
     <v-toolbar id="loginToolBar" style="background-color:green !important; justify-content: center">
-      <v-toolbar-title style="font-weight: bold; color: white !important;">NDB</v-toolbar-title>
+      <v-toolbar-title style="font-weight: bold; color: white !important;">DFLOW</v-toolbar-title>
       <v-spacer/>
       <v-icon size="20px" style="color: white !important;" @click="close">mdi-close</v-icon>
     </v-toolbar>
+    <v-img :src="logo" max-width="160px" max-height="160px"
+    style="margin-left: 70px; margin-top: 20px"></v-img>
     <v-text-field solo
                   id="account"
                   label="아이디"
@@ -13,45 +15,42 @@
                   prepend-icon="mdi-account"
                   outlined
                   v-model="account"
+                  @keyup.enter="login"
                   style="color:black !important; padding: 20px 15px 0px 15px">
     </v-text-field>
-    <!--      <v-text-field solo-->
-    <!--                    id="password"-->
-    <!--                    label="비밀번호"-->
-    <!--                    placeholder="비밀번호"-->
-    <!--                    required-->
-    <!--                    prepend-icon="mdi-lock"-->
-    <!--                    outlined-->
-    <!--                    v-model="password"-->
-    <!--                    style="padding: 0px 15px 0px 15px"-->
-    <!--                    type="password"-->
-    <!--      >-->
-    <!--      </v-text-field>-->
     <v-card-actions style="justify-content: center">
       <v-btn id="login" color="blue darken-1" text @click="login">로그인</v-btn>
     </v-card-actions>
-    <v-card-actions v-if="isLoggedIn" style="padding: 1px 10px 2px 60px; color: white !important; "></v-card-actions>
-    <v-card-actions v-else style=" justify-content: center; transition: opacity ease 2s 1s; opacity: 0; ">
+    <v-card-actions v-if="status==='success'" style="padding: 1px 10px 2px 60px; color: white !important; "></v-card-actions>
+    <v-card-actions v-else-if="status==='failed'" style=" justify-content: center; transition: opacity ease 2s 1s; opacity: 0; ">
       <v-btn style="background-color: black; color: white">등록되지 않은 사용자입니다.</v-btn>
+    </v-card-actions>
+    <v-card-actions v-else style=" justify-content: center; transition: opacity ease 2s 1s; opacity: 0; ">
+      <v-btn style="background-color: black; color: white">네트워크 연결이 되지 않았습니다.</v-btn>
     </v-card-actions>
 
   </v-card>
 </template>
 <script>
+import image from '../assets/logo.png'
+
 export default {
   name: 'Login',
   created() {
     window.IPC.receive('login-reply', (evt) => {
-      console.log(evt)
-      this.isLoggedIn = evt
-      if(evt) {
-        this.close()
+      if(evt === null) {
+        this.status = 'disconnected'
+      } else {
+        this.status = evt !== '' ? 'success' : 'failed'
+        if(evt) {
+          this.close()
+        }
       }
     })
   },
   methods: {
     async login() {
-      this.isLoggedIn = true
+      this.status = 'success'
       await window.IPC.send('login', this.account, this.password)
     },
     async close() {
@@ -59,8 +58,9 @@ export default {
     }
   },
   data: () => ({
+    logo: image,
     username: '',
-    isLoggedIn: true,
+    status: 'success',
     account: '',
     password: '',
   }),

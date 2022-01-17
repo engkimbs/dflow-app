@@ -3,11 +3,7 @@
     <v-app-bar app st>
       <v-app-bar-nav-icon></v-app-bar-nav-icon>
       <v-spacer></v-spacer>
-      <v-btn id="notification" style="margin-right:5px; padding-right: 30px">
-        <v-icon size="30px" style="color:white !important; padding-right: 10px;">mdi-bell-outline</v-icon>
-        <div style="color:white !important;"> 공지</div>
-      </v-btn>
-      <Login/>
+      <User/>
     </v-app-bar>
     <v-main>
       <v-container fluid >
@@ -86,14 +82,16 @@
   </v-app>
 </template>
 <script>
-import Login from './components/Login'
+import User from './components/User'
+import image from './assets/logo.png'
 
 export default {
-  components: {Login},
+  components: {User},
   created() {
     this.company_list = []
     this.extractInfo = `${this.company_list.length} 개의 데이터가 추출되었습니다.`
     window.IPC.receive('get-file-path', (evt) => {
+      console.log(evt)
       this.exportToExcel(evt)
     })
   },
@@ -102,8 +100,6 @@ export default {
       return new Promise((resolve) => setTimeout(resolve, ms));
     },
     exportToExcel(path) {
-      console.log(this.headers)
-      console.log(this.company_list)
       window.IPC.send('write-excel-files', path, this.headers, this.company_list)
     },
     filterPhoneNumber() {
@@ -138,32 +134,32 @@ export default {
           await this.sleep(parseInt(this.delay) * 1000);
           await this.$getNAVERMapItemList("https://map.naver.com/v5/api/search?", keyword, page)
               .then(response => {
-            if (response.result == null) return;
-            response.result.place.list.map(data => {
-              rank += 1
-              let item = {
-                name: data['name'],
-                address: data['address'],
-                phone: data['tel'],
-                category: data['category'],
-                keyword: keyword,
-                rank: rank,
-                website: data['homePage'],
-                isMobile: data['tel'].startsWith('010')
-              }
-              this.total_company_list.push(item);
-              if (this.isMobileOnly) {
-                if (item.isMobile) {
-                  this.company_list.push(item)
-                  count += 1
-                }
-              } else {
-                this.company_list.push(item)
-                count += 1
-              }
-              this.extractInfo = `${count} 개의 데이터가 추출되었습니다.`
-            })
-          })
+                if (response.result == null) return;
+                response.result.place.list.map(data => {
+                  rank += 1
+                  let item = {
+                    name: data['name'],
+                    address: data['address'],
+                    phone: data['tel'],
+                    category: data['category'],
+                    keyword: keyword,
+                    rank: rank,
+                    website: data['homePage'],
+                    isMobile: data['tel'].startsWith('010')
+                  }
+                  this.total_company_list.push(item);
+                  if (this.isMobileOnly) {
+                    if (item.isMobile) {
+                      this.company_list.push(item)
+                      count += 1
+                    }
+                  } else {
+                    this.company_list.push(item)
+                    count += 1
+                  }
+                  this.extractInfo = `${count} 개의 데이터가 추출되었습니다.`
+                })
+              })
         }
       }
       this.isProcessing = false
@@ -184,6 +180,11 @@ export default {
     }
   },
   data: () => ({
+    logo: image,
+
+    email: '',
+    name: '',
+
     page: 6,
     panel: 0,
     keywordList: [],
@@ -254,11 +255,11 @@ button {
   background-color: #8195c7 !important;
 }
 
-#loginButton {
+#userButton {
   background-color: #272a3d !important;
 }
 
-#loginButton:hover {
+#userButton:hover {
   background-color: #8195c7 !important;
 }
 

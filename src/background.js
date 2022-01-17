@@ -4,6 +4,7 @@ import ExcelJS from 'exceljs'
 import {createProtocol} from 'vue-cli-plugin-electron-builder/lib'
 import installExtension, {VUEJS_DEVTOOLS} from 'electron-devtools-installer'
 import {autoUpdater} from "electron-updater"
+import axios from "axios";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
@@ -13,19 +14,20 @@ protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true,
 let mainWindow
 let loginWindow
 
+let user
+
 async function createLoginWindow(devPath, prodPath) {
     loginWindow = new BrowserWindow({
         width: 300,
-        height: 260,
+        height: 450,
         webPreferences: {
             nodeIntegration: process.env.ELECTRON_NODE_INTEGRATION,
             contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
             preload: path.join(__dirname, "preload.js")
         },
         frame:false,
-        //resizable: false
+        resizable: false,
     })
-
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
         await loginWindow.loadURL(process.env.WEBPACK_DEV_SERVER_URL + devPath)
@@ -33,7 +35,7 @@ async function createLoginWindow(devPath, prodPath) {
             loginWindow.webContents.openDevTools()
     } else {
         createProtocol('app')
-        loginWindow.loadURL('app://./index.html')
+        loginWindow.loadURL('app://./login.html')
     }
 }
 
@@ -46,6 +48,8 @@ async function createMainWindow(devPath, prodPath) {
             contextIsolation: !process.env.ELECTRON_NODE_INTEGRATION,
             preload: path.join(__dirname, "preload.js")
         },
+        autoHideMenuBar: true,
+        icon: path.join(__dirname, "assets/logo.png")
     })
 
     if (process.env.WEBPACK_DEV_SERVER_URL) {
@@ -59,43 +63,73 @@ async function createMainWindow(devPath, prodPath) {
 }
 
 ipcMain.on('select-dirs', async (event, arg) => {
-    const result = await dialog.showOpenDialog(win, {properties: ['openDirectory']})
-    console.log('select-dirs!!')
-    event.reply('get-file-path', result.filePaths)
+    const path = await dialog.showSaveDialogSync(
+        mainWindow, {
+            title: '엑셀 파일 저장',
+            defaultPath: '~/sample.xlsx',
+            filters: [
+                {name : '엑셀 파일', extensions: ['xlsx']}
+            ]
+        }
+    )
+    console.log(path)
+    event.reply('get-file-path', path)
 })
 
 ipcMain.on('login', async (event, account, password="") => {
-    // if(process.env.NODE_ENV === "development") {
-    //     let loginURL = 'http://localhost:80'
-    //     await axios.get()
-    // } else {
-    //
-    // }
-    // firebase.auth().createUserWithEmailAndPassword(account, password)
-    //     .then(
-    //         function (user) {
-    //             alert('회원가입 완료!')
-    //             console.log(user)
-    //         },
-    //         function (err) {
-    //             alert('에러 : ' + err.message)
-    //         }
-    //     )
-    if(account === "eng.kimbs@gmail.com") {
+    let response = null
+    if(process.env.NODE_ENV === "development") {
+        let loginURL = 'http://localhost:5000/api/users/login'
+        try {
+            response = await axios.post(loginURL, {
+                'email': account,
+                'password': password
+            })
+        } catch (e) {
+
+        }
+    } else {
+        let loginURL = 'http://dflowbackend-env.eba-eyxdwua9.ap-northeast-2.elasticbeanstalk.com:80/api/users/login'
+        try {
+            response = await axios.post(loginURL, {
+                'email': account,
+                'password': password
+            })
+        } catch (e) {
+
+        }
+    }
+
+    if(response === null) {
+        event.reply('login-reply', response)
+    } else if(response.data) {
+        user = response.data
         await createMainWindow('', 'index.html')
         mainWindow.show()
-        event.reply('login-reply', true)
+        event.reply('login-reply', response.data)
     }
     else {
-        event.reply('login-reply', false)
+        event.reply('login-reply', '')
     }
+})
+
+ipcMain.on('get-user-info', async (event) => {
+    event.reply('get-user-info', user)
 })
 
 ipcMain.on('login-window-close', async (event) => {
-    loginWindow.destroy()
+    loginWindow.close()
 })
 
+ipcMain.on('login-success', async (event) => {
+    console.log(user)
+    event.reply(user)
+})
+
+
 ipcMain.on('write-excel-files', async (event, path, headers, company_list) => {
+    console.log('write!!')
+
     const workbook = new ExcelJS.Workbook();
     const worksheet = workbook.addWorksheet("data");
 
@@ -176,8 +210,7 @@ ipcMain.on('write-excel-files', async (event, path, headers, company_list) => {
         })
     })
 
-    workbook.xlsx.writeFile(path + '\\result1.xlsx').then(() => console.log('done'))
-    //workbook.xlsx.writeFile('result1.xlsx').then(() => console.log('done'))
+    workbook.xlsx.writeFile(path).then(() => console.log('done'))
 })
 
 app.on('window-all-closed', () => {
@@ -197,7 +230,12 @@ app.on('ready', async () => {
             console.error('Vue Devtools failed to install:', e.toString())
         }
     }
-    await createLoginWindow('login', 'login.html')
+
+    if(process.env.testmode === 'main') {
+        await createMainWindow('', 'index.html')
+    } else {
+        await createLoginWindow('login', 'login.html')
+    }
     autoUpdater.checkForUpdatesAndNotify();
 })
 

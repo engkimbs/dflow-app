@@ -9,5 +9,5 @@ Vue.mixin(mixins)
 
 new Vue({
     vuetify,
-    render: h => h(Login)
+    render: h => h(Login),
 }).$mount('#app')
