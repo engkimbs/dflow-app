@@ -8,6 +8,7 @@ import axios from "axios";
 
 const isDevelopment = process.env.NODE_ENV !== 'production'
 const path = require('path')
+const log = require('electron-log')
 
 protocol.registerSchemesAsPrivileged([{scheme: 'app', privileges: {secure: true, standard: true}}])
 
@@ -223,6 +224,9 @@ app.on('activate', () => {
 })
 
 app.on('ready', async () => {
+    log.transports.file.level = 'debug'
+    autoUpdater.logger = log
+
     if (isDevelopment && !process.env.IS_TEST) {
         try {
             await installExtension(VUEJS_DEVTOOLS)
