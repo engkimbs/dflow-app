@@ -1,7 +1,7 @@
 <template>
   <v-card class="elevation-12" height="500px">
     <v-toolbar id="loginToolBar" style="background-color:green !important; justify-content: center">
-      <v-toolbar-title style="font-weight: bold; color: white !important;">DFLOW</v-toolbar-title>
+      <v-toolbar-title style="font-weight: bold; color: white !important;">D-FLOW</v-toolbar-title>
       <v-spacer/>
       <v-icon size="20px" style="color: white !important;" @click="close">mdi-close</v-icon>
     </v-toolbar>
