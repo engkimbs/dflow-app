@@ -232,9 +232,9 @@ app.on('ready', async () => {
     }
 
     if(process.env.testmode === 'main') {
-        await createMainWindow('', 'index.html')
+        createMainWindow('', 'index.html')
     } else {
-        await createLoginWindow('login', 'login.html')
+        createLoginWindow('login', 'login.html')
     }
     autoUpdater.checkForUpdatesAndNotify();
 })
