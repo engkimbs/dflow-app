@@ -6,6 +6,7 @@
       <mapping pattern="LICENSE" type="PLAIN_TEXT" />
       <mapping pattern=".gitiignore" type="PLAIN_TEXT" />
       <mapping ext="nsh" type="PLAIN_TEXT" />
+      <removed_mapping ext="nsh" approved="true" type="NSIS script" />
     </extensionMap>
   </component>
 </application>
